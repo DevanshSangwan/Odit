@@ -26,7 +26,7 @@ A full-stack, role-based document management and workflow platform designed for 
 ![audit_logs_page](./public/screenshots/odit_audit_logs_page.png)
 ![docs_in_pending](./public/screenshots/odit_docs_in_pending.png)
 ![docs_viewer](./public/screenshots/odit_docs_viewer.png)
-
+![architecture_diagram](./public/screenshots/architecture_diagram.png)
 
 
 ## 🚀 Setup & Installation
