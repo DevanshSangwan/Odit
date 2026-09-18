@@ -117,7 +117,7 @@ export function SignupForm() {
               type="text"
               required
               className={`${fieldClassName} pl-10`}
-              placeholder="1, 2, or 3"
+              placeholder="Enter Firm ID"
             />
           </div>
         </div>
