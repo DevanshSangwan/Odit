@@ -58,12 +58,12 @@ export default async function DashboardPage() {
               {clients.map((c) => (
                 <tr
                   key={c.id}
-                  className="bg-white transition hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/60"
+                  className="relative bg-white transition hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/60"
                 >
                   <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
                     <Link
                       href={`/dashboard/client/${c.id}`}
-                      className="hover:text-teal-700 dark:hover:text-teal-400"
+                      className="after:absolute after:inset-0"
                     >
                       {c.name}
                     </Link>
