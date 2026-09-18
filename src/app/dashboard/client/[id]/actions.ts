@@ -22,6 +22,27 @@ async function getActor() {
   return profile ? { supabase, user, profile } : null;
 }
 
+// ─── Get Signed URL (STAFF + REVIEWER) ──────────────────────────────────────
+
+export async function getDocumentUrl(
+  filePath: string,
+): Promise<{ url: string | null; error: string | null }> {
+  const ctx = await getActor();
+  if (!ctx) return { url: null, error: "Not authenticated." };
+  const { supabase } = ctx;
+
+  const { data, error } = await supabase.storage
+    .from("audit-docs")
+    .createSignedUrl(filePath, 3600);
+
+  if (error) {
+    console.error("[getDocumentUrl] signed URL:", error);
+    return { url: null, error: error.message };
+  }
+
+  return { url: data.signedUrl, error: null };
+}
+
 // ─── Upload Document (STAFF only) ────────────────────────────────────────────
 
 export async function uploadDocument(
@@ -68,7 +89,12 @@ export async function uploadDocument(
   const newStatus = currentStatus === "CORRECTION_REQUIRED" ? "UPLOADED_AGAIN" : "UPLOADED";
   const { error: updateError } = await supabase
     .from("documents")
-    .update({ status: newStatus, file_path: storagePath, updated_at: new Date().toISOString() })
+    .update({
+      status: newStatus,
+      file_path: storagePath,
+      uploaded_by_id: user.id,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", documentId)
     .eq("firm_id", profile.firm_id);
 

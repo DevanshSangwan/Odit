@@ -1,10 +1,12 @@
 "use client";
 
 import {
+  getDocumentUrl,
   reviewDocument,
   uploadDocument,
 } from "@/app/dashboard/client/[id]/actions";
-import { CheckCircle2, MessageSquare, RotateCcw, Upload } from "lucide-react";
+import { DocumentViewer } from "@/app/dashboard/client/[id]/document-viewer";
+import { CheckCircle2, Eye, MessageSquare, RotateCcw, Upload } from "lucide-react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,6 +16,9 @@ type Doc = {
   status: string;
   latest_comment: string | null;
   file_path: string | null;
+  updated_at: string | null;
+  uploader_name: string | null;
+  uploader_staff_id: string | null;
 };
 
 type Props = {
@@ -79,7 +84,7 @@ function UploadForm({ doc, clientId, clientName }: Omit<Props, "role">) {
   );
 }
 
-// ─── Review controls (REVIEWER) ───────────────────────────────────────────────
+// ─── Review controls (REVIEWER) ──────────────────────────────────────────────
 
 function ReviewControls({ doc, clientId, clientName }: Omit<Props, "role">) {
   const [state, action, pending] = useActionState(reviewDocument, idle);
@@ -172,7 +177,6 @@ function ReviewControls({ doc, clientId, clientName }: Omit<Props, "role">) {
   );
 }
 
-// Approve uses its own form so new_status is isolated
 function ApproveButton({ pending }: { pending: boolean }) {
   return (
     <button
@@ -191,28 +195,77 @@ function ApproveButton({ pending }: { pending: boolean }) {
 // ─── Document Card ────────────────────────────────────────────────────────────
 
 export function DocumentCard({ doc, clientId, clientName, role }: Props) {
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [urlLoading, setUrlLoading] = useState(false);
+
   const canUpload =
     role === "STAFF" && ["PENDING", "CORRECTION_REQUIRED"].includes(doc.status);
+  const hasFile = !!doc.file_path;
+
+  async function openViewer() {
+    if (!doc.file_path) return;
+    setUrlLoading(true);
+    const { url, error } = await getDocumentUrl(doc.file_path);
+    setUrlLoading(false);
+    if (error || !url) {
+      toast.error(error ?? "Could not load document.");
+      return;
+    }
+    setSignedUrl(url);
+    setViewerOpen(true);
+  }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-        {doc.doc_name}
-      </p>
+    <>
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            {doc.doc_name}
+          </p>
+          {hasFile && (
+            <button
+              onClick={openViewer}
+              disabled={urlLoading}
+              title="View document"
+              className="shrink-0 rounded-lg p-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          )}
+        </div>
 
-      {doc.latest_comment && (
-        <p className="mt-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          💬 {doc.latest_comment}
-        </p>
-      )}
+        {doc.latest_comment && (
+          <p className="mt-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+            💬 {doc.latest_comment}
+          </p>
+        )}
 
-      {canUpload && (
-        <UploadForm doc={doc} clientId={clientId} clientName={clientName} />
-      )}
+        {canUpload && (
+          <UploadForm doc={doc} clientId={clientId} clientName={clientName} />
+        )}
 
-      {role === "REVIEWER" && (
-        <ReviewControls doc={doc} clientId={clientId} clientName={clientName} />
+        {role === "REVIEWER" && (
+          <ReviewControls doc={doc} clientId={clientId} clientName={clientName} />
+        )}
+      </div>
+
+      {viewerOpen && signedUrl && (
+        <DocumentViewer
+          signedUrl={signedUrl}
+          docName={doc.doc_name}
+          clientName={clientName}
+          status={doc.status}
+          updatedAt={doc.updated_at}
+          uploaderName={doc.uploader_name}
+          uploaderStaffId={doc.uploader_staff_id}
+          latestComment={doc.latest_comment}
+          onClose={() => {
+            setViewerOpen(false);
+            setSignedUrl(null);
+          }}
+        />
       )}
-    </div>
+    </>
   );
 }
