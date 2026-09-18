@@ -16,11 +16,24 @@ export default async function DashboardPage() {
     .eq("id", user!.id)
     .single();
 
-  const { data: clients } = await supabase
+  const { data: reviewers } = profile?.role === "STAFF"
+    ? await supabase
+        .from("profiles")
+        .select("id, name, custom_emp_id")
+        .eq("firm_id", profile.firm_id)
+        .eq("role", "REVIEWER")
+        .order("custom_emp_id")
+    : { data: [] };
+
+  const clientsQuery = supabase
     .from("clients")
     .select("id, name, created_at, assigned_staff_id, assigned_reviewer_id")
-    .eq("firm_id", profile!.firm_id)
-    .order("created_at", { ascending: false });
+    .eq("firm_id", profile!.firm_id);
+
+  if (profile!.role === "STAFF") clientsQuery.eq("assigned_staff_id", user!.id);
+  if (profile!.role === "REVIEWER") clientsQuery.eq("assigned_reviewer_id", user!.id);
+
+  const { data: clients } = await clientsQuery.order("created_at", { ascending: false });
 
   return (
     <div className="p-8">
@@ -28,7 +41,7 @@ export default async function DashboardPage() {
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
           Clients
         </h1>
-        {profile?.role === "STAFF" && <CreateClientModal />}
+        {profile?.role === "STAFF" && <CreateClientModal reviewers={reviewers ?? []} />}
       </div>
 
       {!clients || clients.length === 0 ? (

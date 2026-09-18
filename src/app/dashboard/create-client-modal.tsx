@@ -9,7 +9,9 @@ import { toast } from "sonner";
 
 const initial: CreateClientState = { error: null, success: false };
 
-export function CreateClientModal() {
+type Reviewer = { id: string; name: string; custom_emp_id: string };
+
+export function CreateClientModal({ reviewers }: { reviewers: Reviewer[] }) {
   const [open, setOpen] = useState(false);
   const [docs, setDocs] = useState([""]);
   const [state, formAction, pending] = useActionState(createClient, initial);
@@ -107,16 +109,22 @@ export function CreateClientModal() {
                 </div>
                 <div>
                   <label htmlFor={`${uid}-reviewer`} className={labelClassName}>
-                    Reviewer Custom ID
+                    Assigned Reviewer
                   </label>
-                  <input
+                  <select
                     id={`${uid}-reviewer`}
                     name="reviewer_emp_id"
-                    type="text"
                     required
-                    className={`${fieldClassName} ${state.fieldErrors?.reviewer ? "border-red-400 focus:border-red-500" : ""}`}
-                    placeholder="AR1"
-                  />
+                    defaultValue=""
+                    className={`${fieldClassName} ${state.fieldErrors?.reviewer ? "border-red-400 focus:border-red-500" : ""} appearance-none`}
+                  >
+                    <option value="" disabled>Select a reviewer</option>
+                    {reviewers.map((r) => (
+                      <option key={r.id} value={r.custom_emp_id}>
+                        {r.name} ({r.custom_emp_id})
+                      </option>
+                    ))}
+                  </select>
                   {state.fieldErrors?.reviewer && (
                     <p className="mt-1 text-xs text-red-600 dark:text-red-400">
                       {state.fieldErrors.reviewer}

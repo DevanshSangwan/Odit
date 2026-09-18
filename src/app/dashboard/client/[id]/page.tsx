@@ -53,12 +53,15 @@ export default async function ClientPage({
 
   const { data: client, error: clientError } = await supabase
     .from("clients")
-    .select("id, name, created_at, assigned_staff:profiles!clients_assigned_staff_id_fkey(custom_emp_id, name)")
+    .select("id, name, created_at, assigned_staff_id, assigned_reviewer_id, assigned_staff:profiles!clients_assigned_staff_id_fkey(custom_emp_id, name)")
     .eq("id", id)
     .eq("firm_id", profile.firm_id)
     .single();
   if (clientError) console.error("[ClientPage] client fetch:", clientError);
   if (!client) notFound();
+
+  if (profile.role === "STAFF" && client.assigned_staff_id !== user.id) redirect("/dashboard");
+  if (profile.role === "REVIEWER" && client.assigned_reviewer_id !== user.id) redirect("/dashboard");
 
   const assignedStaff = (Array.isArray(client.assigned_staff)
     ? client.assigned_staff[0]
