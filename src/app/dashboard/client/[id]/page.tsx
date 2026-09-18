@@ -60,7 +60,9 @@ export default async function ClientPage({
   if (clientError) console.error("[ClientPage] client fetch:", clientError);
   if (!client) notFound();
 
-  const assignedStaff = client.assigned_staff as { custom_emp_id: string; name: string } | null;
+  const assignedStaff = (Array.isArray(client.assigned_staff)
+    ? client.assigned_staff[0]
+    : client.assigned_staff) as { custom_emp_id: string; name: string } | null ?? null;
 
   const { data: documents, error: docsError } = await supabase
     .from("documents")
@@ -106,7 +108,7 @@ export default async function ClientPage({
       )}
 
       {/* Kanban board */}
-      <div className="flex gap-4 overflow-x-auto pb-6 w-full min-h-[500px] p-6">
+      <div className="flex gap-4 overflow-x-auto pb-6 w-full min-h-125 p-6">
         {COLUMNS.map(({ status, label, color }) => {
           const docs = byStatus[status] ?? [];
           return (
@@ -122,14 +124,17 @@ export default async function ClientPage({
               </div>
 
               {/* Column body */}
-              <div className={`rounded-xl p-3 ${color} space-y-3 min-h-[420px]`}>
+              <div className={`rounded-xl p-3 ${color} space-y-3 min-h-105`}>
                 {docs.length === 0 ? (
                   <p className="pt-4 text-center text-xs text-zinc-400 dark:text-zinc-600">
                     —
                   </p>
                 ) : (
                   docs.map((doc) => {
-                    const uploader = doc.uploaded_by as { name: string; custom_emp_id: string } | null;
+                    const rawUploader = Array.isArray(doc.uploaded_by)
+                      ? doc.uploaded_by[0]
+                      : doc.uploaded_by;
+                    const uploader = rawUploader as { name: string; custom_emp_id: string } | null;
                     return (
                       <DocumentCard
                         key={doc.id}

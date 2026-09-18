@@ -85,8 +85,11 @@ export default async function AuditLogsPage() {
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {logs.map((log) => {
+                const rawProfile = Array.isArray(log.profiles)
+                  ? log.profiles[0]
+                  : log.profiles;
                 const userName =
-                  (log.profiles as { name: string } | null)?.name ?? "—";
+                  (rawProfile as { name: string } | null)?.name ?? "—";
                 const badge =
                   ACTION_BADGE[log.action] ??
                   "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
