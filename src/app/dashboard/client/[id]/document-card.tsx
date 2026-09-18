@@ -27,18 +27,27 @@ const idle = { error: null, success: false };
 
 // ─── Upload form (STAFF) ──────────────────────────────────────────────────────
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+
 function UploadForm({ doc, clientId, clientName }: Omit<Props, "role">) {
   const [state, action, pending] = useActionState(uploadDocument, idle);
+  const [sizeError, setSizeError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.success) {
       toast.success(`"${doc.doc_name}" uploaded.`);
+      setSizeError(null);
       formRef.current?.reset();
     } else if (state.error) {
       toast.error(state.error);
     }
   }, [state, doc.doc_name]);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    setSizeError(file && file.size > MAX_FILE_BYTES ? "File size exceeds 10MB limit." : null);
+  }
 
   return (
     <form ref={formRef} action={action} className="mt-3 space-y-2">
@@ -52,11 +61,15 @@ function UploadForm({ doc, clientId, clientName }: Omit<Props, "role">) {
         type="file"
         accept="application/pdf"
         required
+        onChange={handleFileChange}
         className="block w-full text-xs text-zinc-500 file:mr-2 file:rounded-md file:border-0 file:bg-teal-50 file:px-2.5 file:py-1 file:text-xs file:font-medium file:text-teal-700 hover:file:bg-teal-100 dark:text-zinc-400 dark:file:bg-teal-950/40 dark:file:text-teal-400"
       />
+      {sizeError && (
+        <p className="text-xs text-red-600 dark:text-red-400">{sizeError}</p>
+      )}
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || !!sizeError}
         className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-700 disabled:opacity-60"
       >
         <Upload className="h-3.5 w-3.5" />
