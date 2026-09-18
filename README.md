@@ -28,6 +28,12 @@ A full-stack, role-based document management and workflow platform designed for 
 ![docs_viewer](./public/screenshots/odit_docs_viewer.png)
 ![architecture_diagram](./public/screenshots/architecture_diagram.png)
 
+## ❓ What would you improve with one more week?
+With one more week, I would focus on adding an automated notification system. Currently, users have to manually check the dashboard to see if a document's status has updated. Sending quick email or in-app alerts when a file moves to "Correction Required" or "Approved" would speed up the review cycle and keep the team perfectly synchronized.
+
+I would also build a simple analytics view for the firm administrators. Adding basic visual charts to track how many documents are currently pending, or measuring the average time it takes to complete a review, would give the firm valuable insights into where their workflow is slowing down.
+
+
 
 ## 🚀 Setup & Installation
 
