@@ -24,12 +24,33 @@ async function getActor() {
 
 // ─── Get Signed URL (STAFF + REVIEWER) ──────────────────────────────────────
 
+const REVIEWER_VIEWABLE = ["UNDER_REVIEW", "CORRECTION_REQUIRED"];
+
 export async function getDocumentUrl(
   filePath: string,
+  documentId: string,
 ): Promise<{ url: string | null; error: string | null }> {
   const ctx = await getActor();
   if (!ctx) return { url: null, error: "Not authenticated." };
-  const { supabase } = ctx;
+  const { supabase, profile } = ctx;
+
+  if (profile.role === "REVIEWER") {
+    const { data: doc, error: docError } = await supabase
+      .from("documents")
+      .select("status")
+      .eq("id", documentId)
+      .eq("firm_id", profile.firm_id)
+      .single();
+
+    if (docError) console.error("[getDocumentUrl] doc status fetch:", docError);
+
+    if (!doc || !REVIEWER_VIEWABLE.includes(doc.status)) {
+      return {
+        url: null,
+        error: "Access denied: Reviewers can only view documents under review or requiring correction.",
+      };
+    }
+  }
 
   const { data, error } = await supabase.storage
     .from("audit-docs")

@@ -194,6 +194,8 @@ function ApproveButton({ pending }: { pending: boolean }) {
 
 // ─── Document Card ────────────────────────────────────────────────────────────
 
+const REVIEWER_VIEWABLE = ["UNDER_REVIEW", "CORRECTION_REQUIRED"];
+
 export function DocumentCard({ doc, clientId, clientName, role }: Props) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
@@ -203,10 +205,20 @@ export function DocumentCard({ doc, clientId, clientName, role }: Props) {
     role === "STAFF" && ["PENDING", "CORRECTION_REQUIRED"].includes(doc.status);
   const hasFile = !!doc.file_path;
 
+  const canView =
+    hasFile &&
+    (role === "STAFF" || REVIEWER_VIEWABLE.includes(doc.status));
+
+  // Reviewer has a file but can't view yet (UPLOADED / UPLOADED_AGAIN)
+  const reviewerMustStartFirst =
+    role === "REVIEWER" &&
+    hasFile &&
+    !REVIEWER_VIEWABLE.includes(doc.status);
+
   async function openViewer() {
     if (!doc.file_path) return;
     setUrlLoading(true);
-    const { url, error } = await getDocumentUrl(doc.file_path);
+    const { url, error } = await getDocumentUrl(doc.file_path, doc.id);
     setUrlLoading(false);
     if (error || !url) {
       toast.error(error ?? "Could not load document.");
@@ -223,7 +235,7 @@ export function DocumentCard({ doc, clientId, clientName, role }: Props) {
           <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
             {doc.doc_name}
           </p>
-          {hasFile && (
+          {canView && (
             <button
               onClick={openViewer}
               disabled={urlLoading}
@@ -232,6 +244,15 @@ export function DocumentCard({ doc, clientId, clientName, role }: Props) {
             >
               <Eye className="h-4 w-4" />
             </button>
+          )}
+          {reviewerMustStartFirst && (
+            <span
+              title="Start review to view this document"
+              className="flex shrink-0 items-center gap-1 rounded-md bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+            >
+              <Eye className="h-3 w-3" />
+              Start review first
+            </span>
           )}
         </div>
 
