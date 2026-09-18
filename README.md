@@ -20,6 +20,15 @@ A full-stack, role-based document management and workflow platform designed for 
 
 ---
 
+## Screenshots
+![signup_page](./public/screenshots/odit_signup_page.png)
+![clients_dashboard](./public/screenshots/odit_clients_dashboard.png)
+![audit_logs_page](./public/screenshots/odit_audit_logs_page.png)
+![docs_in_pending](./public/screenshots/odit_docs_in_pending.png)
+![docs_viewer](./public/screenshots/odit_docs_viewer.png)
+
+
+
 ## 🚀 Setup & Installation
 
 ### 1. Prerequisites
@@ -43,9 +52,3 @@ cd your-repo-name
 
 
 
-## Screenshots
-![signup_page](./public/screenshots/odit_signup_page.png)
-![clients_dashboard](./public/screenshots/odit_clients_dashboard.png)
-![audit_logs_page](./public/screenshots/odit_audit_logs_page.png)
-![docs_in_pending](./public/screenshots/odit_docs_in_pending.png)
-![docs_viewer](./public/screenshots/odit_docs_viewer.png)
