@@ -22,7 +22,7 @@ export function CreateClientModal() {
       setOpen(false);
       setDocs([""]);
       formRef.current?.reset();
-    } else if (state.error) {
+    } else if (state.error && !state.fieldErrors) {
       toast.error(state.error);
     }
   }, [state]);
@@ -96,9 +96,14 @@ export function CreateClientModal() {
                     name="staff_emp_id"
                     type="text"
                     required
-                    className={fieldClassName}
+                    className={`${fieldClassName} ${state.fieldErrors?.staff ? "border-red-400 focus:border-red-500" : ""}`}
                     placeholder="AS1"
                   />
+                  {state.fieldErrors?.staff && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                      {state.fieldErrors.staff}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor={`${uid}-reviewer`} className={labelClassName}>
@@ -109,9 +114,14 @@ export function CreateClientModal() {
                     name="reviewer_emp_id"
                     type="text"
                     required
-                    className={fieldClassName}
+                    className={`${fieldClassName} ${state.fieldErrors?.reviewer ? "border-red-400 focus:border-red-500" : ""}`}
                     placeholder="AR1"
                   />
+                  {state.fieldErrors?.reviewer && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                      {state.fieldErrors.reviewer}
+                    </p>
+                  )}
                 </div>
               </div>
 

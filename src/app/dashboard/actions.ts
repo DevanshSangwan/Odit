@@ -3,7 +3,11 @@
 import { createServerClient } from "@/lib/supabase/createServerClient";
 import { revalidatePath } from "next/cache";
 
-export type CreateClientState = { error: string | null; success: boolean };
+export type CreateClientState = {
+  error: string | null;
+  fieldErrors?: { staff?: string; reviewer?: string };
+  success: boolean;
+};
 
 export async function createClient(
   _prev: CreateClientState,
@@ -38,25 +42,33 @@ export async function createClient(
     return { error: "Add at least one required document.", success: false };
   }
 
-  // Resolve custom_emp_ids → UUIDs, scoped to the actor's firm
-  const { data: staffProfile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("custom_emp_id", staffEmpId)
-    .eq("firm_id", actor.firm_id)
-    .single();
-  if (!staffProfile) {
-    return { error: `No staff member found with ID "${staffEmpId}" in your firm.`, success: false };
-  }
+  // Resolve custom_emp_ids → UUIDs, scoped to the actor's firm with strict role checks
+  const [{ data: staffProfile }, { data: reviewerProfile }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id")
+      .eq("custom_emp_id", staffEmpId)
+      .eq("firm_id", actor.firm_id)
+      .eq("role", "STAFF")
+      .single(),
+    supabase
+      .from("profiles")
+      .select("id")
+      .eq("custom_emp_id", reviewerEmpId)
+      .eq("firm_id", actor.firm_id)
+      .eq("role", "REVIEWER")
+      .single(),
+  ]);
 
-  const { data: reviewerProfile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("custom_emp_id", reviewerEmpId)
-    .eq("firm_id", actor.firm_id)
-    .single();
-  if (!reviewerProfile) {
-    return { error: `No reviewer found with ID "${reviewerEmpId}" in your firm.`, success: false };
+  if (!staffProfile || !reviewerProfile) {
+    return {
+      error: "One or more IDs are invalid.",
+      fieldErrors: {
+        ...(!staffProfile && { staff: "Invalid Staff ID. Ensure the staff member exists in your firm." }),
+        ...(!reviewerProfile && { reviewer: "Invalid Reviewer ID. Ensure the reviewer exists in your firm." }),
+      },
+      success: false,
+    };
   }
 
   // Insert client

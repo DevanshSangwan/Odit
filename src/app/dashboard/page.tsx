@@ -1,6 +1,7 @@
 import { CreateClientModal } from "@/app/dashboard/create-client-modal";
 import { createServerClient } from "@/lib/supabase/createServerClient";
 import { Users } from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const supabase = await createServerClient();
@@ -60,7 +61,12 @@ export default async function DashboardPage() {
                   className="bg-white transition hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/60"
                 >
                   <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
-                    {c.name}
+                    <Link
+                      href={`/dashboard/client/${c.id}`}
+                      className="hover:text-teal-700 dark:hover:text-teal-400"
+                    >
+                      {c.name}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                     {new Date(c.created_at).toLocaleDateString()}
