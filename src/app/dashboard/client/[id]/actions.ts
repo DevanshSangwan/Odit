@@ -24,7 +24,7 @@ async function getActor() {
 
 // ─── Get Signed URL (STAFF + REVIEWER) ──────────────────────────────────────
 
-const REVIEWER_VIEWABLE = ["UNDER_REVIEW", "CORRECTION_REQUIRED"];
+const REVIEWER_VIEWABLE = ["UNDER_REVIEW", "CORRECTION_REQUIRED", "APPROVED"];
 
 export async function getDocumentUrl(
   filePath: string,

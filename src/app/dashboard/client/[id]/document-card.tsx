@@ -194,7 +194,7 @@ function ApproveButton({ pending }: { pending: boolean }) {
 
 // ─── Document Card ────────────────────────────────────────────────────────────
 
-const REVIEWER_VIEWABLE = ["UNDER_REVIEW", "CORRECTION_REQUIRED"];
+const REVIEWER_VIEWABLE = ["UNDER_REVIEW", "CORRECTION_REQUIRED", "APPROVED"];
 
 export function DocumentCard({ doc, clientId, clientName, role }: Props) {
   const [viewerOpen, setViewerOpen] = useState(false);
